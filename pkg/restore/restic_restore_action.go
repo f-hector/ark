@@ -37,21 +37,20 @@ type resticRestoreAction struct {
 	initContainerImage string
 }
 
-func NewResticRestoreAction(logger logrus.FieldLogger) ItemAction {
+func NewResticRestoreAction(restoreHelperImage string, logger logrus.FieldLogger) ItemAction {
 	return &resticRestoreAction{
 		logger:             logger,
-		initContainerImage: initContainerImage(),
+		initContainerImage: initContainerImage(restoreHelperImage),
 	}
 }
 
-func initContainerImage() string {
+func initContainerImage(restoreHelperImage string) string {
 	tag := buildinfo.Version
 	if tag == "" {
 		tag = "latest"
 	}
 
-	// TODO allow full image URL to be overriden via CLI flag.
-	return fmt.Sprintf("gcr.io/heptio-images/ark-restic-restore-helper:%s", tag)
+	return fmt.Sprintf("%s:%s", restoreHelperImage, tag)
 }
 
 func (a *resticRestoreAction) AppliesTo() (ResourceSelector, error) {

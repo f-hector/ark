@@ -17,6 +17,8 @@ limitations under the License.
 package plugin
 
 import (
+	"fmt"
+
 	plugin "github.com/hashicorp/go-plugin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -37,15 +39,19 @@ func NewCommand(f client.Factory) *cobra.Command {
 	logger := arkplugin.NewLogger()
 
 	c := &cobra.Command{
-		Use:    "run-plugin [KIND] [NAME]",
+		Use:    "run-plugin [KIND] [NAME] [KEY-VALUE-ARGS...]",
 		Hidden: true,
 		Short:  "INTERNAL COMMAND ONLY - not intended to be run directly by users",
-		Args:   cobra.ExactArgs(2),
+		Args:   cobra.MinimumNArgs(2),
 		Run: func(c *cobra.Command, args []string) {
 			kind := args[0]
 			name := args[1]
+			extraArgs := map[string]string{}
+			for i := 2; i < len(args); i += 2 {
+				extraArgs[args[i]] = args[i+1]
+			}
 
-			logger = logger.WithFields(logrus.Fields{"kind": kind, "name": name})
+			logger = logger.WithFields(logrus.Fields{"kind": kind, "name": name, "extraArgs": fmt.Sprintf("%v", extraArgs)})
 
 			serveConfig := &plugin.ServeConfig{
 				HandshakeConfig: arkplugin.Handshake,
@@ -114,7 +120,11 @@ func NewCommand(f client.Factory) *cobra.Command {
 				case "svc":
 					action = restore.NewServiceAction(logger)
 				case "restic":
-					action = restore.NewResticRestoreAction(logger)
+					restoreHelperImage, ok := extraArgs["restore-helper-image"]
+					if !ok {
+						logger.Fatal("Missing required 'restic restore-helper-image <YOUR_IMAGE>' arg")
+					}
+					action = restore.NewResticRestoreAction(restoreHelperImage, logger)
 				default:
 					logger.Fatal("Unrecognized plugin name")
 				}

@@ -14,10 +14,11 @@ ark server [flags]
 ### Options
 
 ```
-  -h, --help                     help for server
-      --log-level                the level at which to log. Valid values are debug, info, warning, error, fatal, panic. (default info)
-      --metrics-address string   the address to expose prometheus metrics (default ":8085")
-      --plugin-dir string        directory containing Ark plugins (default "/plugins")
+  -h, --help                                 help for server
+      --log-level                            the level at which to log. Valid values are debug, info, warning, error, fatal, panic. (default info)
+      --metrics-address string               the address to expose prometheus metrics (default ":8085")
+      --plugin-dir string                    directory containing Ark plugins (default "/plugins")
+      --restic-restore-helper-image string   the image to fetch when restoring restic volumes (default "gcr.io/heptio-images/ark-restic-restore-helper")
 ```
 
 ### Options inherited from parent commands

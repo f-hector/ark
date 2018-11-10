@@ -129,21 +129,23 @@ type Manager interface {
 }
 
 type manager struct {
-	logger         logrus.FieldLogger
-	logLevel       logrus.Level
-	pluginRegistry *registry
-	clientStore    *clientStore
-	pluginDir      string
+	logger                   logrus.FieldLogger
+	logLevel                 logrus.Level
+	pluginRegistry           *registry
+	clientStore              *clientStore
+	pluginDir                string
+	resticRestoreHelperImage string
 }
 
 // NewManager constructs a manager for getting plugin implementations.
-func NewManager(logger logrus.FieldLogger, level logrus.Level, pluginDir string) (Manager, error) {
+func NewManager(logger logrus.FieldLogger, level logrus.Level, pluginDir string, resticRestoreHelperImage string) (Manager, error) {
 	m := &manager{
-		logger:         logger,
-		logLevel:       level,
-		pluginRegistry: newRegistry(),
-		clientStore:    newClientStore(),
-		pluginDir:      pluginDir,
+		logger:                   logger,
+		logLevel:                 level,
+		pluginRegistry:           newRegistry(),
+		clientStore:              newClientStore(),
+		pluginDir:                pluginDir,
+		resticRestoreHelperImage: resticRestoreHelperImage,
 	}
 
 	if err := m.registerPlugins(); err != nil {
@@ -197,7 +199,7 @@ func (m *manager) registerPlugins() error {
 	m.pluginRegistry.register("job", arkCommand, []string{"run-plugin", string(PluginKindRestoreItemAction), "job"}, PluginKindRestoreItemAction)
 	m.pluginRegistry.register("restore-pod", arkCommand, []string{"run-plugin", string(PluginKindRestoreItemAction), "pod"}, PluginKindRestoreItemAction)
 	m.pluginRegistry.register("svc", arkCommand, []string{"run-plugin", string(PluginKindRestoreItemAction), "svc"}, PluginKindRestoreItemAction)
-	m.pluginRegistry.register("restic", arkCommand, []string{"run-plugin", string(PluginKindRestoreItemAction), "restic"}, PluginKindRestoreItemAction)
+	m.pluginRegistry.register("restic", arkCommand, []string{"run-plugin", string(PluginKindRestoreItemAction), "restic", "restore-helper-image", m.resticRestoreHelperImage}, PluginKindRestoreItemAction)
 
 	// second, register external plugins (these will override internal plugins, if applicable)
 	if _, err := os.Stat(m.pluginDir); err != nil {

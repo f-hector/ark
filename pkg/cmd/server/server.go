@@ -72,14 +72,16 @@ import (
 
 const (
 	// the port where prometheus metrics are exposed
-	defaultMetricsAddress = ":8085"
+	defaultMetricsAddress           = ":8085"
+	defaultResticRestoreHelperImage = "gcr.io/heptio-images/ark-restic-restore-helper"
 )
 
 func NewCommand() *cobra.Command {
 	var (
-		logLevelFlag   = logging.LogLevelFlag(logrus.InfoLevel)
-		pluginDir      = "/plugins"
-		metricsAddress = defaultMetricsAddress
+		logLevelFlag             = logging.LogLevelFlag(logrus.InfoLevel)
+		pluginDir                = "/plugins"
+		metricsAddress           = defaultMetricsAddress
+		resticRestoreHelperImage = defaultResticRestoreHelperImage
 	)
 
 	var command = &cobra.Command{
@@ -114,7 +116,7 @@ func NewCommand() *cobra.Command {
 			}
 			namespace := getServerNamespace(namespaceFlag)
 
-			s, err := newServer(namespace, fmt.Sprintf("%s-%s", c.Parent().Name(), c.Name()), pluginDir, metricsAddress, logger)
+			s, err := newServer(namespace, fmt.Sprintf("%s-%s", c.Parent().Name(), c.Name()), pluginDir, metricsAddress, resticRestoreHelperImage, logger)
 			cmd.CheckError(err)
 
 			cmd.CheckError(s.run())
@@ -124,6 +126,7 @@ func NewCommand() *cobra.Command {
 	command.Flags().Var(logLevelFlag, "log-level", fmt.Sprintf("the level at which to log. Valid values are %s.", strings.Join(logLevelFlag.AllowedValues(), ", ")))
 	command.Flags().StringVar(&pluginDir, "plugin-dir", pluginDir, "directory containing Ark plugins")
 	command.Flags().StringVar(&metricsAddress, "metrics-address", metricsAddress, "the address to expose prometheus metrics")
+	command.Flags().StringVar(&resticRestoreHelperImage, "restic-restore-helper-image", resticRestoreHelperImage, "the image to fetch when restoring restic volumes")
 
 	return command
 }
@@ -163,7 +166,7 @@ type server struct {
 	metrics               *metrics.ServerMetrics
 }
 
-func newServer(namespace, baseName, pluginDir, metricsAddr string, logger *logrus.Logger) (*server, error) {
+func newServer(namespace, baseName, pluginDir, metricsAddr, resticRestoreHelperImage string, logger *logrus.Logger) (*server, error) {
 	clientConfig, err := client.Config("", "", baseName)
 	if err != nil {
 		return nil, err
@@ -179,7 +182,7 @@ func newServer(namespace, baseName, pluginDir, metricsAddr string, logger *logru
 		return nil, errors.WithStack(err)
 	}
 
-	pluginManager, err := plugin.NewManager(logger, logger.Level, pluginDir)
+	pluginManager, err := plugin.NewManager(logger, logger.Level, pluginDir, resticRestoreHelperImage)
 	if err != nil {
 		return nil, err
 	}
