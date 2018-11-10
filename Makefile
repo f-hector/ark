@@ -48,12 +48,12 @@ GOARCH = $(word 2, $(platform_temp))
 ifeq ($(GOARCH),amd64)
 		DOCKERFILE ?= Dockerfile-$(BIN).alpine
 endif
-#ifeq ($(GOARCH),arm)
-#		DOCKERFILE ?= Dockerfile.arm #armel/busybox
-#endif
-#ifeq ($(GOARCH),arm64)
-#		DOCKERFILE ?= Dockerfile.arm64 #aarch64/busybox
-#endif
+ifeq ($(GOARCH),arm)
+		DOCKERFILE ?= Dockerfile.arm #armel/busybox
+endif
+# ifeq ($(GOARCH),arm64)
+# 		DOCKERFILE ?= Dockerfile.arm64 #aarch64/busybox
+# endif
 
 IMAGE := $(REGISTRY)/$(BIN)
 
