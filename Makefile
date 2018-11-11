@@ -49,7 +49,7 @@ ifeq ($(GOARCH),amd64)
 		DOCKERFILE ?= Dockerfile-$(BIN).alpine
 endif
 ifeq ($(GOARCH),arm)
-		DOCKERFILE ?= Dockerfile.arm #armel/busybox
+		DOCKERFILE ?= Dockerfile-$(BIN).arm
 endif
 # ifeq ($(GOARCH),arm64)
 # 		DOCKERFILE ?= Dockerfile.arm64 #aarch64/busybox
