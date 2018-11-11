@@ -51,7 +51,7 @@ func initContainerImage() string {
 	}
 
 	// TODO allow full image URL to be overriden via CLI flag.
-	return fmt.Sprintf("gcr.io/heptio-images/ark-restic-restore-helper:%s", tag)
+	return fmt.Sprintf("ljfranklin/ark-restic-restore-helper-arm:%s", tag)
 }
 
 func (a *resticRestoreAction) AppliesTo() (ResourceSelector, error) {
